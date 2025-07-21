@@ -26,12 +26,8 @@ export default function InvoiceForm() {
     cc: "15-003-2002 T&C HVAC SYSTEM",
     remarks: "SRV NO:11261",
     faxNumber: "SRV NO:11261",
-
-    // ✅ Correct field names
     authorizedName: "",
     authorizedMobile: "",
-
-    // ✅ New services table
     services: [
       {
         serial: 1,
@@ -103,7 +99,6 @@ export default function InvoiceForm() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Group fields by sections
   const spoDetails = formFields.filter((field) =>
     ["spoNumber", "spoDate"].includes(field.name)
   );
@@ -136,11 +131,11 @@ export default function InvoiceForm() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-900 p-6">
+    <div className="min-h-screen bg-zinc-900 p-4 sm:p-6">
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Form Section */}
         <div className="flex justify-center">
-          <div className="space-y-6">
+          <div className="space-y-6 w-full max-w-3xl">
             {/* SPO Details */}
             <Card className="w-full bg-zinc-800 text-white">
               <CardHeader>
@@ -149,18 +144,18 @@ export default function InvoiceForm() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {spoDetails.map((field) => (
                     <div
                       key={field.name}
-                      className={field.colSpan ? "md:col-span-2" : ""}
+                      className={field.colSpan ? "sm:col-span-2" : ""}
                     >
-                      <Label className="text-zinc-300 mb-2 block">
+                      <Label className="text-zinc-300 mb-2 block text-sm sm:text-base">
                         {field.label}
                       </Label>
                       {field.type === "textarea" ? (
                         <Textarea
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -168,7 +163,7 @@ export default function InvoiceForm() {
                         />
                       ) : (
                         <Input
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -189,18 +184,18 @@ export default function InvoiceForm() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {supplierDetails.map((field) => (
                     <div
                       key={field.name}
-                      className={field.colSpan ? "md:col-span-2" : ""}
+                      className={field.colSpan ? "sm:col-span-2" : ""}
                     >
-                      <Label className="text-zinc-300 mb-2 block">
+                      <Label className="text-zinc-300 mb-2 block text-sm sm:text-base">
                         {field.label}
                       </Label>
                       {field.type === "textarea" ? (
                         <Textarea
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -208,7 +203,7 @@ export default function InvoiceForm() {
                         />
                       ) : (
                         <Input
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -229,18 +224,18 @@ export default function InvoiceForm() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {fromDetails.map((field) => (
                     <div
                       key={field.name}
-                      className={field.colSpan ? "md:col-span-2" : ""}
+                      className={field.colSpan ? "sm:col-span-2" : ""}
                     >
-                      <Label className="text-zinc-300 mb-2 block">
+                      <Label className="text-zinc-300 mb-2 block text-sm sm:text-base">
                         {field.label}
                       </Label>
                       {field.type === "textarea" ? (
                         <Textarea
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -248,7 +243,7 @@ export default function InvoiceForm() {
                         />
                       ) : (
                         <Input
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -269,18 +264,18 @@ export default function InvoiceForm() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {authorizedPerson.map((field) => (
                     <div
                       key={field.name}
-                      className={field.colSpan ? "md:col-span-2" : ""}
+                      className={field.colSpan ? "sm:col-span-2" : ""}
                     >
-                      <Label className="text-zinc-300 mb-2 block">
+                      <Label className="text-zinc-300 mb-2 block text-sm sm:text-base">
                         {field.label}
                       </Label>
                       {field.type === "textarea" ? (
                         <Textarea
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -288,7 +283,7 @@ export default function InvoiceForm() {
                         />
                       ) : (
                         <Input
-                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500"
+                          className="bg-zinc-700 text-white border-zinc-600 focus:ring-2 focus:ring-blue-500 w-full"
                           value={form[field.name]}
                           onChange={(e) =>
                             updateForm(field.name, e.target.value)
@@ -318,7 +313,7 @@ export default function InvoiceForm() {
         </div>
         {/* Live Preview */}
         <div className="flex justify-center">
-          <InvoicePreview form={form} />
+          <InvoicePreview form={form} className="w-full max-w-4xl" />
         </div>
       </div>
     </div>

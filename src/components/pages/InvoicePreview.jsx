@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formFields } from "../utils/fields";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas-pro";
-import logoUrl from "../../../public/apple-touch-icon.png";
+import logoUrl from "../../../public/logo.jpeg";
 
 export default function InvoicePreview({ form }) {
   const sections = {
@@ -114,16 +114,30 @@ export default function InvoicePreview({ form }) {
           id="invoice-preview"
           className="p-8 text-sm space-y-10 text-gray-800"
         >
-          {/* Logo */}
-          {logoUrl && (
-            <div className="flex justify-center mb-4">
-              <img
-                src={logoUrl}
-                alt="Company Logo"
-                className="h-20 object-contain"
-              />
+          <div className="flex flex-col items-center mb-6">
+            <div className="flex justify-between items-center w-full max-w-4xl px-4">
+              {/* English Company Name */}
+              <div className="text-sm sm:text-base font-bold italic text-[#080D3C] w-1/3 text-left">
+                Hamda Abdul Razzaq Al Zahrani Contracting Est.
+              </div>
+
+              {/* Logo */}
+              <div className="w-1/3 flex justify-center">
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    alt="Company Logo"
+                    className="h-28 object-contain"
+                  />
+                )}
+              </div>
+
+              {/* Arabic Company Name */}
+              <div className="text-sm sm:text-base font-bold text-[#080D3C] w-1/3 text-right rtl:font-bold rtl:tracking-wide">
+                مؤسسة حمدة عبدالرزاق الزهراني للمقاولات
+              </div>
             </div>
-          )}
+          </div>
 
           {/* Top Sections */}
           <div className="grid md:grid-cols-2 gap-6">
@@ -273,6 +287,16 @@ export default function InvoicePreview({ form }) {
                   <span>Net Amount / المبلغ الصافي:</span>
                   <span>{form?.netAmount?.toLocaleString()}</span>
                 </div>
+              </div>
+            </div>
+            {/* Footer */}
+            <div className="bg-blue-950 text-white h-32 flex justify-center pt-4 p-0">
+              <div>
+                <p className="text-[12px]">Make all checks payable to</p>
+                <h2 className="font-bold">
+                  Hamda Abdul Razzaq Al Zahrani Contracting Company
+                </h2>
+                <p className="text-[12px] pt-6">THANKS FOR YOUR BUSINESS</p>
               </div>
             </div>
           </div>
