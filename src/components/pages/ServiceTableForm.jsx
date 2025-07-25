@@ -61,10 +61,10 @@ export default function ServiceTableForm({ services, setServices }) {
                 <th className="px-2 py-1">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="">
               {services.map((row, index) => (
                 <React.Fragment key={index}>
-                  <tr className="border-t border-zinc-600">
+                  <tr className="border-t border-zinc-600  ">
                     <td className="px-2 py-1">{row.serial}</td>
                     <td className="px-2 py-1">
                       <Input

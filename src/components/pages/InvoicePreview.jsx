@@ -95,6 +95,12 @@ export default function InvoicePreview({ form }) {
     pdf.save(`invoice_${form.spoNumber || "preview"}.pdf`);
   };
 
+  // Calculate totals
+  const servicesTotal =
+    form.services?.reduce((sum, s) => sum + s.total, 0) || 0;
+  const vatAmount = servicesTotal * 0.15; // 15% VAT
+  const netAmount = servicesTotal + vatAmount; // Sum of services total and VAT
+
   return (
     <div className="flex justify-center bg-slate-100 min-h-screen py-10 px-4">
       <Card className="bg-white shadow-2xl rounded-xl w-full max-w-6xl">
@@ -256,7 +262,7 @@ export default function InvoicePreview({ form }) {
                         <tr>
                           <td
                             colSpan="7"
-                            className="px-4 py-2 border  text-gray-600 text-left"
+                            className="px-4 py-2 border text-gray-600 text-left"
                           >
                             {item.description}
                           </td>
@@ -273,19 +279,15 @@ export default function InvoicePreview({ form }) {
               <div className="w-full max-w-md space-y-2 text-sm text-gray-800">
                 <div className="flex justify-between font-semibold">
                   <span>Services Total / إجمالي الخدمات:</span>
-                  <span>
-                    {form.services
-                      ?.reduce((sum, s) => sum + s.total, 0)
-                      ?.toLocaleString()}
-                  </span>
+                  <span>{servicesTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-semibold">
-                  <span>VAT / الضريبة:</span>
-                  <span>{form?.vatAmount?.toLocaleString()}</span>
+                  <span>VAT (15%) / الضريبة (15%):</span>
+                  <span>{vatAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg text-blue-900 border-t pt-2">
                   <span>Net Amount / المبلغ الصافي:</span>
-                  <span>{form?.netAmount?.toLocaleString()}</span>
+                  <span>{netAmount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -319,7 +321,7 @@ function SectionCard({ title, children }) {
 
 function Row({ label, value, bold = false, isSupplierName = false }) {
   return (
-    <div className="flex justify-between  items-start">
+    <div className="flex justify-between items-start">
       <span
         className={bold ? "font-semibold text-xs" : "text-xs font-semibold"}
       >
