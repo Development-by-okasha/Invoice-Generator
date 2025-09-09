@@ -230,7 +230,7 @@ export default function InvoicePreview({ form }) {
           </div>
 
           {/* Content Area - Empty space for writing */}
-          <div className="flex-1 min-h-[842px] border-t border-b border-gray-200 my-8">
+          <div className="flex-1 min-h-[900px] border-t border-b border-gray-200 my-8">
             <div className="h-full flex items-center justify-center text-gray-400">
               <div className="text-center">
                 {/* <p className="text-lg mb-2">Content Area / منطقة المحتوى</p>
