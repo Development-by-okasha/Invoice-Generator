@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formFields } from "../utils/fields";
@@ -7,6 +7,8 @@ import html2canvas from "html2canvas-pro";
 import logoUrl from "../../../public/logo.jpeg";
 
 export default function InvoicePreview({ form }) {
+  const [activeTab, setActiveTab] = useState("invoice");
+
   const sections = {
     "SPO Details": formFields.filter((field) =>
       ["spoNumber", "spoDate"].includes(field.name)
@@ -95,39 +97,109 @@ export default function InvoicePreview({ form }) {
     pdf.save(`invoice_${form.spoNumber || "preview"}.pdf`);
   };
 
+  const generateLetterhead = async () => {
+    const letterheadElement = document.getElementById("letterhead-template");
+
+    const canvas = await html2canvas(letterheadElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      allowTaint: true,
+      foreignObjectRendering: false,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+      compress: true,
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = canvas.width / 4;
+    const imgHeight = canvas.height / 4;
+    const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+    const scaledWidth = imgWidth * ratio;
+    const scaledHeight = imgHeight * ratio;
+    const xOffset = (pdfWidth - scaledWidth) / 2;
+    const yOffset = (pdfHeight - scaledHeight) / 2;
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      xOffset,
+      yOffset,
+      scaledWidth,
+      scaledHeight,
+      "",
+      "FAST"
+    );
+
+    pdf.save("company_letterhead.pdf");
+  };
+
   // Calculate totals
   const servicesTotal =
     form.services?.reduce((sum, s) => sum + s.total, 0) || 0;
-  const vatAmount = servicesTotal * 0.15; // 15% VAT
-  const netAmount = servicesTotal + vatAmount; // Sum of services total and VAT
+  const vatAmount = servicesTotal * 0.15;
+  const netAmount = servicesTotal + vatAmount;
 
-  return (
-    <div className="flex justify-center bg-slate-100 min-h-screen py-10 px-4">
-      <Card className="bg-white shadow-2xl rounded-xl w-full max-w-6xl">
-        <CardHeader className="flex justify-between items-center bg-blue-50 border-b border-blue-200 rounded-t-xl p-6">
-          <CardTitle className="text-2xl font-bold text-blue-900 tracking-wide">
-            🧾 Invoice / الفاتورة
-          </CardTitle>
-          <Button
-            onClick={generatePDF}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2 px-6 rounded-md shadow-md"
-          >
-            Generate PDF
-          </Button>
-        </CardHeader>
+  // Tab Navigation Component
+  const TabNavigation = () => (
+    <div className="flex border-b border-gray-200 mb-6">
+      <button
+        onClick={() => setActiveTab("invoice")}
+        className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+          activeTab === "invoice"
+            ? "border-blue-600 text-blue-600 bg-blue-50"
+            : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300"
+        }`}
+      >
+        🧾 Invoice / الفاتورة
+      </button>
+      <button
+        onClick={() => setActiveTab("letterhead")}
+        className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+          activeTab === "letterhead"
+            ? "border-green-600 text-green-600 bg-green-50"
+            : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300"
+        }`}
+      >
+        📄 Letterhead / الورقة الرسمية
+      </button>
+    </div>
+  );
 
-        <CardContent
-          id="invoice-preview"
-          className="p-8 text-sm space-y-10 text-gray-800"
+  // Letterhead Content Component
+  const LetterheadContent = () => (
+    <div className="bg-white shadow-2xl rounded-xl w-full max-w-6xl">
+      <CardHeader className="flex justify-between items-center bg-green-50 border-b border-green-200 rounded-t-xl p-6">
+        <CardTitle className="text-2xl font-bold text-green-900 tracking-wide">
+          📄 Company Letterhead / الورقة الرسمية
+        </CardTitle>
+        <Button
+          onClick={generateLetterhead}
+          className="bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 px-6 rounded-md shadow-md"
         >
+          Download Letterhead
+        </Button>
+      </CardHeader>
+      <CardContent className="p-8">
+        <div
+          id="letterhead-template"
+          className="bg-white text-sm h-full flex flex-col justify-between  p-8 text-gray-800 border 
+          border-gray-200 rounded-lg"
+        >
+          {/* Header Section */}
           <div className="flex flex-col items-center mb-6">
             <div className="flex justify-between items-center w-full max-w-4xl px-4">
-              {/* English Company Name */}
               <div className="text-sm sm:text-base font-bold italic text-[#080D3C] w-1/3 text-left">
                 Hamda Abdul Razzaq Al Zahrani Contracting Est.
               </div>
 
-              {/* Logo */}
               <div className="w-1/3 flex justify-center">
                 {logoUrl && (
                   <img
@@ -138,172 +210,273 @@ export default function InvoicePreview({ form }) {
                 )}
               </div>
 
-              {/* Arabic Company Name */}
               <div className="text-sm sm:text-base font-bold text-[#080D3C] w-1/3 text-right rtl:font-bold rtl:tracking-wide">
                 مؤسسة حمدة عبدالرزاق الزهراني للمقاولات
               </div>
             </div>
-          </div>
 
-          {/* Top Sections */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Supplier Info */}
-            <SectionCard title="DRAFT COPY / نسخة أولية">
-              <Row label="SPO NO. / رقم الطلب" value={form.spoNumber} bold />
-              <Row label="SPO DATE / تاريخ الطلب" value={form.spoDate} bold />
-              <SectionHeader
-                label="Supplier Ref. No / Date"
-                ar="رقم / تاريخ مرجع المورد"
-              />
-              <SectionHeader label="Supplier's Details" ar="تفاصيل المورد" />
-              <Row label="TRS#" value={form.trs || "TRS1164"} />
-              <Row
-                label="Supplier Name / اسم المورد"
-                value={form.supplierName || "Farhan Abdullah Muslim AlbAlwi"}
-                isSupplierName
-              />
-              <Row
-                label="VAT / الرقم الضريبي"
-                value={form.vat || "311254535700003"}
-              />
-              <Row label="CR / السجل التجاري" value={form.cr || "3555102180"} />
-              <Row
-                label="Contact / جهة الاتصال"
-                value={form.contact || "Mr. Anwar Khan"}
-              />
-              <Row label="Tel / الهاتف" value={form.tel || "054 260 6560"} />
-              <SectionHeader
-                label="Authorized Contact"
-                ar="جهة الاتصال المخولة"
-              />
-              <Row label="Name / الاسم" value={form.authorizedName || "N/A"} />
-              <Row
-                label="Mobile# / الجوال"
-                value={form.authorizedMobile || "N/A"}
-              />
-            </SectionCard>
-
-            {/* Project Info */}
-            <SectionCard title="R0">
-              <SectionHeader label="From" ar="من" />
-              <Row
-                label="Company / الشركة"
-                value={form.company || "Astra Construction Company Ltd."}
-              />
-              <Row
-                label="VAT / الرقم الضريبي"
-                value={form.companyVat || "300056054710003"}
-              />
-              <Row
-                label="CR / السجل التجاري"
-                value={form.companyCr || "3550005809"}
-              />
-              <SectionHeader label="Project" ar="المشروع" />
-              <Row
-                label="Name / الاسم"
-                value={form.project || "Secondary Infrastructure Package"}
-              />
-              <SectionHeader label="Location" ar="الموقع" />
-              <Row value={form.location || "Triple Bay - Marina Precinct"} />
-              <SectionHeader label="Activity" ar="النشاط" />
-              <Row
-                value={`${form.activity || "15"} / ${
-                  form.activity_type || "Mechanical"
-                }`}
-              />
-              <SectionHeader label="C.C" ar="رمز التكلفة" />
-              <Row value={form.cc || "15-003-2002"} />
-              <SectionHeader label="Remarks" ar="ملاحظات" />
-              <Row value={form.remarks || "SRV NO:11261"} />
-            </SectionCard>
-          </div>
-
-          {/* Service Table */}
-          <div className="border border-gray-300 rounded-md overflow-hidden">
-            <div className="bg-gray-800 text-white px-4 py-2 font-semibold text-base tracking-wide">
-              Service Details / تفاصيل الخدمة
+            {/* Company Contact Information */}
+            <div className="text-center space-y-1 mt-4">
+              <div className="text-xs font-semibold text-gray-700">
+                Phone: +966 59 3772303 | الهاتف
+              </div>
+              <div className="text-xs font-semibold text-gray-700">
+                VAT Registration Number: 311897094700003 | رقم التسجيل الضريبي
+              </div>
+              <div className="text-xs font-semibold text-gray-700">
+                Address: جدة، جدة 6454، - حي الحرازات 22284 | العنوان
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-t text-sm text-center">
-                <thead className="bg-gray-200 font-semibold">
-                  <tr>
-                    <th className="px-3 py-2 border">#</th>
-                    <th className="px-3 py-2 border">
-                      Service Code / كود الخدمة
-                    </th>
-                    <th className="px-3 py-2 border">Description / الوصف</th>
-                    <th className="px-3 py-2 border">Qty / الكمية</th>
-                    <th className="px-3 py-2 border">Unit / الوحدة</th>
-                    <th className="px-3 py-2 border">
-                      Unit Price / سعر الوحدة
-                    </th>
-                    <th className="px-3 py-2 border">Total / الإجمالي</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {form.services?.map((item, index) => (
-                    <React.Fragment key={index}>
-                      <tr className="even:bg-blue-50 font-medium">
-                        <td className="px-2 py-2 border">{item.serial}</td>
-                        <td className="px-2 py-2 border">{item.serviceCode}</td>
-                        <td className="px-2 py-2 border text-left">
-                          {item.serviceDescription}
-                        </td>
-                        <td className="px-2 py-2 border">{item.qty}</td>
-                        <td className="px-2 py-2 border">{item.unit}</td>
-                        <td className="px-2 py-2 border">
-                          {item.unitPrice?.toLocaleString()}
-                        </td>
-                        <td className="px-2 py-2 border">
-                          {item.total?.toLocaleString()}
+          </div>
+
+          {/* Content Area - Empty space for writing */}
+          <div className="flex-1 min-h-[842px] border-t border-b border-gray-200 my-8">
+            <div className="h-full flex items-center justify-center text-gray-400">
+              <div className="text-center">
+                {/* <p className="text-lg mb-2">Content Area / منطقة المحتوى</p>
+                <p className="text-sm">
+                  This space is available for your content
+                </p>
+                <p className="text-sm">هذه المساحة متاحة لمحتواك</p> */}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Section */}
+          <div className="bg-blue-950 text-white h-32 flex justify-center items-center p-4 rounded-md">
+            <div className="text-center">
+              <p className="text-[12px] mb-2">Make all checks payable to</p>
+              <h2 className="font-bold text-sm">
+                Hamda Abdul Razzaq Al Zahrani Contracting Company
+              </h2>
+              <p className="text-[12px] mt-4">THANKS FOR YOUR BUSINESS</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </div>
+  );
+
+  // Invoice Content Component
+  const InvoiceContent = () => (
+    <Card className="bg-white shadow-2xl rounded-xl w-full max-w-6xl">
+      <CardHeader className="flex justify-between items-center bg-blue-50 border-b border-blue-200 rounded-t-xl p-6">
+        <CardTitle className="text-2xl font-bold text-blue-900 tracking-wide">
+          🧾 Invoice / الفاتورة
+        </CardTitle>
+        <Button
+          onClick={generatePDF}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm py-2 px-6 rounded-md shadow-md"
+        >
+          Generate PDF
+        </Button>
+      </CardHeader>
+      <CardContent
+        id="invoice-preview"
+        className="p-8 text-sm space-y-10 text-gray-800"
+      >
+        <div className="flex flex-col items-center mb-6">
+          <div className="flex justify-between items-center w-full max-w-4xl px-4">
+            <div className="text-sm sm:text-base font-bold italic text-[#080D3C] w-1/3 text-left">
+              Hamda Abdul Razzaq Al Zahrani Contracting Est.
+            </div>
+
+            <div className="w-1/3 flex justify-center">
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt="Company Logo"
+                  className="h-28 object-contain"
+                />
+              )}
+            </div>
+
+            <div className="text-sm sm:text-base font-bold text-[#080D3C] w-1/3 text-right rtl:font-bold rtl:tracking-wide">
+              مؤسسة حمدة عبدالرزاق الزهراني للمقاولات
+            </div>
+          </div>
+
+          {/* Company Contact Information */}
+          <div className="text-center space-y-1 mt-4">
+            <div className="text-xs font-semibold text-gray-700">
+              Phone: +966 59 3772303 | الهاتف
+            </div>
+            <div className="text-xs font-semibold text-gray-700">
+              VAT Registration Number: 311897094700003 | رقم التسجيل الضريبي
+            </div>
+            <div className="text-xs font-semibold text-gray-700">
+              Address: جدة، جدة 6454، - حي الحرازات 22284 | العنوان
+            </div>
+          </div>
+        </div>
+
+        {/* Top Sections */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Supplier Info */}
+          <SectionCard title="DRAFT COPY / نسخة أولية">
+            <Row label="SPO NO. / رقم الطلب" value={form.spoNumber} bold />
+            <Row label="SPO DATE / تاريخ الطلب" value={form.spoDate} bold />
+            <SectionHeader
+              label="Supplier Ref. No / Date"
+              ar="رقم / تاريخ مرجع المورد"
+            />
+            <SectionHeader label="Supplier's Details" ar="تفاصيل المورد" />
+            <Row label="TRS#" value={form.trs || "TRS1164"} />
+            <Row
+              label="Supplier Name / اسم المورد"
+              value={form.supplierName || "Farhan Abdullah Muslim AlbAlwi"}
+              isSupplierName
+            />
+            <Row
+              label="VAT / الرقم الضريبي"
+              value={form.vat || "311254535700003"}
+            />
+            <Row label="CR / السجل التجاري" value={form.cr || "3555102180"} />
+            <Row
+              label="Contact / جهة الاتصال"
+              value={form.contact || "Mr. Anwar Khan"}
+            />
+            <Row label="Tel / الهاتف" value={form.tel || "054 260 6560"} />
+            <SectionHeader
+              label="Authorized Contact"
+              ar="جهة الاتصال المخولة"
+            />
+            <Row label="Name / الاسم" value={form.authorizedName || "N/A"} />
+            <Row
+              label="Mobile# / الجوال"
+              value={form.authorizedMobile || "N/A"}
+            />
+          </SectionCard>
+
+          {/* Project Info */}
+          <SectionCard title="R0">
+            <SectionHeader label="From" ar="من" />
+            <Row
+              label="Company / الشركة"
+              value={form.company || "Astra Construction Company Ltd."}
+            />
+            <Row
+              label="VAT / الرقم الضريبي"
+              value={form.companyVat || "300056054710003"}
+            />
+            <Row
+              label="CR / السجل التجاري"
+              value={form.companyCr || "3550005809"}
+            />
+            <SectionHeader label="Project" ar="المشروع" />
+            <Row
+              label="Name / الاسم"
+              value={form.project || "Secondary Infrastructure Package"}
+            />
+            <SectionHeader label="Location" ar="الموقع" />
+            <Row value={form.location || "Triple Bay - Marina Precinct"} />
+            <SectionHeader label="Activity" ar="النشاط" />
+            <Row
+              value={`${form.activity || "15"} / ${
+                form.activity_type || "Mechanical"
+              }`}
+            />
+            <SectionHeader label="C.C" ar="رمز التكلفة" />
+            <Row value={form.cc || "15-003-2002"} />
+            <SectionHeader label="Remarks" ar="ملاحظات" />
+            <Row value={form.remarks || "SRV NO:11261"} />
+          </SectionCard>
+        </div>
+
+        {/* Service Table */}
+        <div className="border border-gray-300 rounded-md overflow-hidden">
+          <div className="bg-gray-800 text-white px-4 py-2 font-semibold text-base tracking-wide">
+            Service Details / تفاصيل الخدمة
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-t text-sm text-center">
+              <thead className="bg-gray-200 font-semibold">
+                <tr>
+                  <th className="px-3 py-2 border">#</th>
+                  <th className="px-3 py-2 border">
+                    Service Code / كود الخدمة
+                  </th>
+                  <th className="px-3 py-2 border">Description / الوصف</th>
+                  <th className="px-3 py-2 border">Qty / الكمية</th>
+                  <th className="px-3 py-2 border">Unit / الوحدة</th>
+                  <th className="px-3 py-2 border">Unit Price / سعر الوحدة</th>
+                  <th className="px-3 py-2 border">Total / الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody>
+                {form.services?.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <tr className="even:bg-blue-50 font-medium">
+                      <td className="px-2 py-2 border">{item.serial}</td>
+                      <td className="px-2 py-2 border">{item.serviceCode}</td>
+                      <td className="px-2 py-2 border text-left">
+                        {item.serviceDescription}
+                      </td>
+                      <td className="px-2 py-2 border">{item.qty}</td>
+                      <td className="px-2 py-2 border">{item.unit}</td>
+                      <td className="px-2 py-2 border">
+                        {item.unitPrice?.toLocaleString()}
+                      </td>
+                      <td className="px-2 py-2 border">
+                        {item.total?.toLocaleString()}
+                      </td>
+                    </tr>
+                    {item.description && (
+                      <tr>
+                        <td
+                          colSpan="7"
+                          className="px-4 py-2 border text-gray-600 text-left"
+                        >
+                          {item.description}
                         </td>
                       </tr>
-                      {item.description && (
-                        <tr>
-                          <td
-                            colSpan="7"
-                            className="px-4 py-2 border text-gray-600 text-left"
-                          >
-                            {item.description}
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Totals */}
-            <div className="flex justify-end p-6 border-t bg-gray-100">
-              <div className="w-full max-w-md space-y-2 text-sm text-gray-800">
-                <div className="flex justify-between font-semibold">
-                  <span>Services Total / إجمالي الخدمات:</span>
-                  <span>{servicesTotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between font-semibold">
-                  <span>VAT (15%) / الضريبة (15%):</span>
-                  <span>{vatAmount.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between font-bold text-lg text-blue-900 border-t pt-2">
-                  <span>Net Amount / المبلغ الصافي:</span>
-                  <span>{netAmount.toLocaleString()}</span>
-                </div>
+          {/* Totals */}
+          <div className="flex justify-end p-6 border-t bg-gray-100">
+            <div className="w-full max-w-md space-y-2 text-sm text-gray-800">
+              <div className="flex justify-between font-semibold">
+                <span>Services Total / إجمالي الخدمات:</span>
+                <span>{servicesTotal.toLocaleString()}</span>
               </div>
-            </div>
-            {/* Footer */}
-            <div className="bg-blue-950 text-white h-32 flex justify-center pt-4 p-0">
-              <div>
-                <p className="text-[12px]">Make all checks payable to</p>
-                <h2 className="font-bold">
-                  Hamda Abdul Razzaq Al Zahrani Contracting Company
-                </h2>
-                <p className="text-[12px] pt-6">THANKS FOR YOUR BUSINESS</p>
+              <div className="flex justify-between font-semibold">
+                <span>VAT (15%) / الضريبة (15%):</span>
+                <span>{vatAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg text-blue-900 border-t pt-2">
+                <span>Net Amount / المبلغ الصافي:</span>
+                <span>{netAmount.toLocaleString()}</span>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          {/* Footer */}
+          <div className="bg-blue-950 text-white h-32 flex justify-center pt-4 p-0">
+            <div>
+              <p className="text-[12px]">Make all checks payable to</p>
+              <h2 className="font-bold">
+                Hamda Abdul Razzaq Al Zahrani Contracting Company
+              </h2>
+              <p className="text-[12px] pt-6">THANKS FOR YOUR BUSINESS</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="bg-slate-100 min-h-screen py-10 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Tab Navigation */}
+        <TabNavigation />
+        {/* Tab Content */}
+        {activeTab === "invoice" ? <InvoiceContent /> : <LetterheadContent />}
+      </div>
     </div>
   );
 }
