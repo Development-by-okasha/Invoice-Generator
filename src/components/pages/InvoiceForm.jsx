@@ -193,9 +193,9 @@ export default function InvoiceForm() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Invoice Generator
               </h1>
-              <p className="text-gray-600 mt-1">
+              {/* <p className="text-gray-600 mt-1">
                 Create professional invoices with ease
-              </p>
+              </p> */}
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="outline" className="text-lg px-4 py-2">
